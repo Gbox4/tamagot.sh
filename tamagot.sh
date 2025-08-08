@@ -75,27 +75,29 @@ print_frame() {
 	# Get happiness level
 	local happiness=$(calculate_happiness "$REPO_PATH")
 
-	# Calculate time until hungry (3 hours since last commit)
-	local hours_since_commit=0
+	# Calculate time until hungry (1 hour since last commit)
+	local minutes_since_commit=0
 	if [ "$last_commit" != "never" ]; then
 		# Get timestamp of last commit
 		local last_commit_timestamp=$(cd "$REPO_PATH" && git log -1 --format="%at" 2>/dev/null)
 		local current_timestamp=$(date +%s)
 		local seconds_since=$((current_timestamp - last_commit_timestamp))
-		hours_since_commit=$((seconds_since / 3600))
+		minutes_since_commit=$((seconds_since / 60))
 	fi
 
-	# Calculate progress to hungry (3 hours = hungry)
-	local hungry_in_hours=$((3 - hours_since_commit))
-	if [ $hungry_in_hours -lt 0 ]; then
-		hungry_in_hours=0
+	# Calculate minutes remaining until hungry (60 minutes = hungry)
+	local hungry_in_minutes=$((60 - minutes_since_commit))
+	if [ $hungry_in_minutes -lt 0 ]; then
+		hungry_in_minutes=0
 	fi
 
-	# Create braille progress bar (3 hours = 12 segments, 15 minutes each)
-	local segments_filled=$((hours_since_commit * 4))
-	if [ $segments_filled -gt 12 ]; then
-		segments_filled=12
+	# Create braille progress bar (60 minutes = 12 segments, 5 minutes each)
+	# Bar starts full and depletes
+	local segments_empty=$((minutes_since_commit / 5))
+	if [ $segments_empty -gt 12 ]; then
+		segments_empty=12
 	fi
+	local segments_filled=$((12 - segments_empty))
 
 	local progress_bar=""
 	for i in {1..12}; do
@@ -106,12 +108,22 @@ print_frame() {
 		fi
 	done
 
-	# Print status lines
-	printf "Repo: %s\n" "$(basename "$REPO_PATH")"
-	printf "Mood: %s\n" "$happiness"
-	printf "Commits (24h): %d\n" "$commits_24h"
-	printf "Last committed: %s\n" "$last_commit"
-	printf "Hungry in: %dh %s\n" "$hungry_in_hours" "$progress_bar"
+	# Format time display
+	local time_display
+	if [ $hungry_in_minutes -ge 60 ]; then
+		time_display="1h"
+	elif [ $hungry_in_minutes -gt 0 ]; then
+		time_display="${hungry_in_minutes}m"
+	else
+		time_display="0m"
+	fi
+
+	# Print status lines with padding to 61 columns
+	printf "Repo: %-55s\n" "$(basename "$REPO_PATH")"
+	printf "Mood: %-55s\n" "$happiness"
+	printf "Commits (24h): %-46d\n" "$commits_24h"
+	printf "Last committed: %-45s\n" "$last_commit"
+	printf "Hunger: %s %-40s\n" "$progress_bar" "$time_display"
 
 	# Restore cursor position
 	printf "\033[u"
