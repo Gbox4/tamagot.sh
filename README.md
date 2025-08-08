@@ -16,14 +16,7 @@ Your Tamagotchi's mood depends on your commit activity:
 - **Neutral**: 2 commits in 24 hours
 - **Happy**: 3+ commits in 24 hours (with recent activity)
 
-The hunger bar starts full after each commit and depletes over 1 hour. Feed your Tamagotchi by making commits!
-
-## Features
-
-- Live animated ASCII pet that reacts to your commit frequency
-- Real-time hunger tracking with visual progress bar
-- Displays recent commit statistics
-- Terminal-friendly interface with proper cursor handling
+The hunger bar starts full after each commit and depletes over 1 hour. Feed your Tamagotchi by making commits.
 
 ## Requirements
 
